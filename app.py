@@ -23,8 +23,8 @@ async def add_token(token_name:str, token_url:str):
     }
     token = TokenModel(**token_dict)
     token = jsonable_encoder(token)
-    new_token = await db["coin_bot"].insert_one(token)
-    created_token = await db["coin_bot"].find_one({"_id": new_token.inserted_id})
+    new_token = db["coin_bot"].insert_one(token)
+    created_token = db["coin_bot"].find_one({"_id": new_token.inserted_id})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_token)
 
 

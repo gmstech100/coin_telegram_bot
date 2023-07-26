@@ -24,10 +24,10 @@ class TokenModel(BaseModel):
     pool_id: int = Field(...)
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "name": "Jane Doe",
                 "token": "0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
