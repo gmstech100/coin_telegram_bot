@@ -1,31 +1,32 @@
-import motor.motor_asyncio
 import uvicorn
 
 from fastapi import FastAPI, Body, HTTPException, status
 from fastapi.responses import Response, JSONResponse
 from fastapi.encoders import jsonable_encoder
-from apis import MONGO_DETAILS
-from models import TokenModel
+from process import insert_token, get_tokens
+from models import TokenModel, ResponseModel
 from process import processing_coin_info
 
 
 app = FastAPI()
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
-db = client.college
 
-@app.post("/", response_description="Add new token", response_model=TokenModel)
+@app.post("/add_token", response_description="Add new token")
 async def add_token(token_name:str, token_url:str):
-    base_token_address, base_token_pool_id = processing_coin_info(token_url)
+    base_token_address, base_token_pool_id = await processing_coin_info(token_url)
     token_dict = {
         "name": token_name,
         "token": base_token_address,
-        "pool_id": base_token_pool_id,
+        "pool_id": str(base_token_pool_id),
     }
     token = TokenModel(**token_dict)
     token = jsonable_encoder(token)
-    new_token = db["coin_bot"].insert_one(token)
-    created_token = db["coin_bot"].find_one({"_id": new_token.inserted_id})
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_token)
+    new_token = insert_token(token)
+    return ResponseModel(data=new_token,message="Insert successfully")
+
+@app.get("/get_tokens", response_description="Get list tokens")
+async def get_tokens():
+    return ResponseModel(data=get_tokens(),message="Get list tokens successfully")
+    
 
 
 if __name__ == "__main__":
