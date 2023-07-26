@@ -12,7 +12,7 @@ app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
 async def add_token(token_name:str, token_url:str):
-    base_token_address, base_token_pool_id = await processing_coin_info(token_url)
+    base_token_address, base_token_pool_id = processing_coin_info(token_url)
     token_dict = {
         "name": token_name,
         "token": base_token_address,
