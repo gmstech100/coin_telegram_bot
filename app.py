@@ -21,8 +21,9 @@ async def add_token(token_name:str, token_url:str):
     }
     token = TokenModel(**token_dict)
     token = jsonable_encoder(token)
-    new_token = await database["tokens"].insert_one(token)
-    return ResponseModel(data=token_dict,message="Insert successfully")
+    token = await database["tokens"].insert_one(token)
+    new_token = await database["tokens"].find_one({"_id": token.inserted_id})
+    return ResponseModel(data=token_helper(new_token),message="Insert successfully")
 
 @app.get("/get_tokens", response_description="Get list tokens")
 async def get_tokens():
