@@ -19,13 +19,13 @@ def get_token_transaction(pool_id):
     params = {
         'reverse-order':False
     }
-    print(requests.get(GET_TRADE_HISTORY, params=params).json())
-    return requests.get(GET_TRADE_HISTORY, params=params).json()
+    print(requests.get(api_url, params=params).json())
+    return requests.get(api_url, params=params).json()
 
 url = 'https://coinmarketcap.com/dexscan/ethereum/0x7235c4aa48b753e48c3786ec60d3bddef5f4b27a/'
 page = Request(url=url,headers={'User-Agent': 'Mozilla/5.0'})
 soup = BeautifulSoup(urlopen(page).read(),'html.parser')
-base_token_address = soup.find('div',{'class':'sc-3514e8c3-0'}).find('a')['href'].split('/')[-1]
+base_token_address = soup.find('div',{'class':'frteJV'}).find('a')['href'].split('/')[-1]
 base_token_pool_id = get_coin_info(base_token_address)['data'][0]['poolId']
 latest_transaction = get_token_transaction(base_token_pool_id)['data']['transactions'][0]
 print(latest_transaction)
