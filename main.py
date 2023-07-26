@@ -19,7 +19,6 @@ def get_token_transaction(pool_id):
     params = {
         'reverse-order':False
     }
-    print(requests.get(api_url, params=params).json())
     return requests.get(api_url, params=params).json()
 
 url = 'https://coinmarketcap.com/dexscan/ethereum/0x7235c4aa48b753e48c3786ec60d3bddef5f4b27a/'
