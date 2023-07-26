@@ -15,6 +15,14 @@ class TokenModel(BaseModel):
             }
         }
         
+def token_helper(token) -> dict:
+    return {
+        "id": str(token["_id"]),
+        "name": token["name"],
+        "token": token["token"],
+        "pool_id": token["pool_id"],
+    }
+        
 def ResponseModel(data, message):
     return {
         "data": [data],
