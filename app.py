@@ -5,19 +5,20 @@ from fastapi.responses import Response, JSONResponse
 from fastapi.encoders import jsonable_encoder
 from database import database
 from process import insert_token, get_tokens
-from models import TokenModel, ResponseModel, token_helper
+from models import TokenModel, ResponseModel, token_helper, Network
 from process import processing_coin_info
 
 
 app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
-async def add_token(token_name:str, token_url:str):
+async def add_token(token_name:str, token_url:str, network:Network = Network.eth):
     base_token_address, base_token_pool_id = processing_coin_info(token_url)
     token_dict = {
         "name": token_name,
         "token": base_token_address,
         "pool_id": str(base_token_pool_id),
+        "network": network.value
     }
     token = TokenModel(**token_dict)
     token = jsonable_encoder(token)
