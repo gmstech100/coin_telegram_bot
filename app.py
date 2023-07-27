@@ -7,12 +7,14 @@ from database import database
 from process import insert_token, get_tokens
 from models import TokenModel, ResponseModel, token_helper, Network
 from process import processing_coin_info
+from loguru import logger
 
 
 app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
 async def add_token(token_name:str, token_url:str, network:Network = Network.ETH):
+    logger.info('token_name: %s \n token_url: %s \n network: %s' % (token_name, token_url, network))
     base_token_address, base_token_pool_id = processing_coin_info(token_url)
     token_dict = {
         "name": token_name,
