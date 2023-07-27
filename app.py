@@ -12,7 +12,7 @@ from process import processing_coin_info
 app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
-async def add_token(token_name:str, token_url:str, network:Network = Network.eth):
+async def add_token(token_name:str, token_url:str, network:Network = Network.ETH):
     base_token_address, base_token_pool_id = processing_coin_info(token_url)
     token_dict = {
         "name": token_name,
