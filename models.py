@@ -3,8 +3,8 @@ from enum import Enum
 
 
 class Network(str, Enum):
-    eth = "eth"
-    bsc = "bsc"
+    ETH = "eth"
+    BSC = "bsc"
     
 class TokenModel(BaseModel):
     name: str = Field(...)
