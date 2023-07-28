@@ -1,6 +1,10 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 
+NETWORK_PLATFORM_ID = {
+    'ETH':1,
+    'BSC':14
+}
 
 class Network(str, Enum):
     ETH = "ETH"

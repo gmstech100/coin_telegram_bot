@@ -15,18 +15,22 @@ app = FastAPI()
 @app.post("/add_token", response_description="Add new token")
 async def add_token(token_name:str, token_url:str, network:Network = Network.ETH):
     logger.info('token_name: %s \n token_url: %s \n network: %s' % (token_name, token_url, network))
-    base_token_address, base_token_pool_id = processing_coin_info(token_url)
-    token_dict = {
-        "name": token_name,
-        "token": base_token_address,
-        "pool_id": str(base_token_pool_id),
-        "network": network.value
-    }
-    token = TokenModel(**token_dict)
-    token = jsonable_encoder(token)
-    token = await database["tokens"].insert_one(token)
-    new_token = await database["tokens"].find_one({"_id": token.inserted_id})
-    return ResponseModel(data=token_helper(new_token),message="Insert successfully")
+    base_token_address, base_token_pool_id = processing_coin_info(token_url, network)
+    if base_token_address is None or base_token_pool_id is None:
+        return ResponseModel(data=None,message="Insert failed. Please try again")
+    else:
+        token_dict = {
+            "name": token_name,
+            "token": base_token_address,
+            "pool_id": str(base_token_pool_id),
+            "network": network.value
+        }
+        token = TokenModel(**token_dict)
+        token = jsonable_encoder(token)
+        token = await database["tokens"].insert_one(token)
+        new_token = await database["tokens"].find_one({"_id": token.inserted_id})
+        return ResponseModel(data=token_helper(new_token),message="Insert successfully")
+        
 
 @app.get("/get_tokens", response_description="Get list tokens")
 async def get_tokens():
