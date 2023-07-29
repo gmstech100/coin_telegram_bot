@@ -7,13 +7,14 @@ NETWORK_PLATFORM_ID = {
 }
 
 class Network(str, Enum):
-    ETH = "etherum"
+    ETH = "ethereum"
     BSC = "bsc"
     
 class TokenModel(BaseModel):
-    name: str = Field(...)
-    token: str = Field(...)
-    pool_id: str = Field(...)
+    base_token_name: str = Field(...)
+    base_token_address: str = Field(...)
+    quote_token_name: str = Field(...)
+    quote_token_address: str = Field(...)
     network: str = Field(...)
     market_cap: int = Field(...)
 
@@ -21,10 +22,11 @@ class TokenModel(BaseModel):
 
         json_schema_extra = {
             "example": {
-                "name": "Jane Doe",
-                "token": "0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
-                "pool_id": "7461333",
-                "network": "etherum",
+                "base_token_name": "CoCo",
+                "base_token_address": "0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
+                "quote_token_name": "CoCo",
+                "quote_token_address":"0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
+                "network": "ethereum",
                 "market_cap": 563352341
             }
         }
@@ -32,9 +34,10 @@ class TokenModel(BaseModel):
 def token_helper(token) -> dict:
     return {
         "id": str(token["_id"]),
-        "name": token["name"],
-        "token": token["token"],
-        "pool_id": token["pool_id"],
+        "base_token_name": token["base_token_name"],
+        "base_token_address": token["base_token_address"],
+        "quote_token_name": token["quote_token_name"],
+        "quote_token_address": token["quote_token_address"],
         "network": token['network'],
         "market_cap": token['market_cap'],
     }

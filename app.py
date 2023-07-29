@@ -1,28 +1,25 @@
 import uvicorn
 
-from fastapi import FastAPI, Body, HTTPException, status
-from fastapi.responses import Response, JSONResponse
+from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from database import database
-from process import insert_token, get_tokens
 from models import TokenModel, ResponseModel, token_helper, Network
 from process import processing_coin_info
-from loguru import logger
 
 
 app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
 async def add_token(token_url:str, network:Network = Network.ETH):
-    logger.info('token_name: %s \n token_url: %s \n network: %s' % (token_name, token_url, network))
-    base_token_name, base_token_address, base_token_pool_id, market_cap = processing_coin_info(token_url, network)
-    if base_token_address is None or base_token_pool_id is None:
+    base_token_name, base_token_address, quote_token_name, quote_token_address, market_cap = processing_coin_info(token_url, network.value)
+    if base_token_address is None:
         return ResponseModel(data=None,message="Insert failed. Please try again")
     else:
         token_dict = {
-            "name": base_token_name,
-            "token": base_token_address,
-            "pool_id": str(base_token_pool_id),
+            "base_token_name": base_token_name,
+            "base_token_address": base_token_address,
+            "quote_token_name":quote_token_name,
+            "quote_token_address":quote_token_address,
             "network": network.value,
             "market_cap":market_cap
         }

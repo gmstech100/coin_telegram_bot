@@ -6,10 +6,10 @@ class WebSocketClient:
         self.url = url
         self.header = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.183',
-            'Sec-Websocket-Extensions': 'permessage-deflate; client_max_window_bits',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cache-Control': 'no-cache'
+            # 'Sec-Websocket-Extensions': 'permessage-deflate; client_max_window_bits',
+            # 'Accept-Encoding': 'gzip, deflate, br',
+            # 'Accept-Language': 'en-US,en;q=0.9',
+            # 'Cache-Control': 'no-cache'
         }
         self.received_message = None
         self.ws = None
