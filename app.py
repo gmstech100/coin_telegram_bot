@@ -13,17 +13,18 @@ from loguru import logger
 app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
-async def add_token(token_name:str, token_url:str, network:Network = Network.ETH):
+async def add_token(token_url:str, network:Network = Network.ETH):
     logger.info('token_name: %s \n token_url: %s \n network: %s' % (token_name, token_url, network))
-    base_token_address, base_token_pool_id = processing_coin_info(token_url, network)
+    base_token_name, base_token_address, base_token_pool_id, market_cap = processing_coin_info(token_url, network)
     if base_token_address is None or base_token_pool_id is None:
         return ResponseModel(data=None,message="Insert failed. Please try again")
     else:
         token_dict = {
-            "name": token_name,
+            "name": base_token_name,
             "token": base_token_address,
             "pool_id": str(base_token_pool_id),
-            "network": network.value
+            "network": network.value,
+            "market_cap":market_cap
         }
         token = TokenModel(**token_dict)
         token = jsonable_encoder(token)

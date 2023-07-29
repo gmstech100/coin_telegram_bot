@@ -7,14 +7,15 @@ NETWORK_PLATFORM_ID = {
 }
 
 class Network(str, Enum):
-    ETH = "ETH"
-    BSC = "BSC"
+    ETH = "etherum"
+    BSC = "bsc"
     
 class TokenModel(BaseModel):
     name: str = Field(...)
     token: str = Field(...)
     pool_id: str = Field(...)
     network: str = Field(...)
+    market_cap: int = Field(...)
 
     class Config:
 
@@ -23,7 +24,8 @@ class TokenModel(BaseModel):
                 "name": "Jane Doe",
                 "token": "0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
                 "pool_id": "7461333",
-                "network": "eth"
+                "network": "etherum",
+                "market_cap": 563352341
             }
         }
         
@@ -33,7 +35,8 @@ def token_helper(token) -> dict:
         "name": token["name"],
         "token": token["token"],
         "pool_id": token["pool_id"],
-        "network": token['network']
+        "network": token['network'],
+        "market_cap": token['market_cap'],
     }
         
 def ResponseModel(data, message):

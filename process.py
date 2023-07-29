@@ -4,6 +4,7 @@ from config import GET_TOKEN_INFO, GET_TRADE_HISTORY, GET_BASE_TOKEN
 from database import database
 from loguru import logger
 from models import NETWORK_PLATFORM_ID
+from token_socket import WebSocketClient
 
 import requests
 import time
@@ -33,12 +34,16 @@ def get_base_token_address(url):
     return requests.get(GET_BASE_TOKEN, params=params).json()
 
 def processing_coin_info(url, network):
-    try:        
-        base_token_address = get_base_token_address(url=url)['pairs'][0]['baseToken']['address']
-        logger.info(base_token_address)
+    try:
+        socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network, url.split('/')[-1])
+        websocket_client = WebSocketClient(socket_url)
+        websocket_client.run_forever(origin="https://dexscreener.com")
+        token_info_message = websocket_client.get_message()
+        base_token_address = token_info_message['pair']['baseToken']['address']
+        market_cap = token_info_message['pair']['marketCap']
+        base_token_name = token_info_message['pair']['baseToken']['name']
         base_token_pool_id = get_coin_info(base_token_address, network)['data'][0]['poolId']
-        logger.info(base_token_pool_id)
-        return base_token_address, base_token_pool_id
+        return base_token_name, base_token_address, base_token_pool_id, market_cap
     except Exception as ex:
         logger.info(f'PROCESSING COIN INFO ERROR :{str(ex)}')
         return None, None

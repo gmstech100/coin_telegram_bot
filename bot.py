@@ -27,7 +27,7 @@ if __name__ == "__main__":
     list_transactions = []
     while True:
         if len(list_transactions) == 0:
-            first_transaction = get_token_transaction(7461333)['data']['transactions'][0]
+            first_transaction = get_token_transaction(6455583)['data']['transactions'][0]
             if first_transaction.get('type') == 'buy':
                 list_transactions.append(first_transaction)
                 send_telegram_message(str(first_transaction))
@@ -35,7 +35,7 @@ if __name__ == "__main__":
                 print('no new transaction')
         else:
             first_transaction = list_transactions[0]
-            list_current_transactions = get_token_transaction(7461333)['data']['transactions']
+            list_current_transactions = get_token_transaction(6455583)['data']['transactions']
             index_first_transaction_in_list = list_current_transactions.index(next(item for item in list_current_transactions if item['time'] == first_transaction['time']))
             if index_first_transaction_in_list != 0:
                 list_transactions = [item for item in list_current_transactions[:index_first_transaction_in_list] if item['type'] == 'buy']
