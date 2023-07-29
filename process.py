@@ -29,11 +29,12 @@ def get_base_token_address(url):
     params = {
         'q':url.split('/')[-1]
     }
+    print(params)
     return requests.get(GET_BASE_TOKEN, params=params).json()
 
 def processing_coin_info(url, network):
     try:        
-        base_token_address = get_base_token_address(url=url)['pairs']['baseToken']['address']
+        base_token_address = get_base_token_address(url=url)['pairs'][0]['baseToken']['address']
         logger.info(base_token_address)
         base_token_pool_id = get_coin_info(base_token_address, network)['data'][0]['poolId']
         logger.info(base_token_pool_id)
