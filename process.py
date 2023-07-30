@@ -1,10 +1,32 @@
 from database import database
 from loguru import logger
 from token_socket import WebSocketClient
+from models import NETWORK_PLATFORM_ID
+from config import GET_TOKEN_INFO
 
+import requests
+
+def get_pool_id(base_token_address, network, pair_address):
+    try:
+        platform_id = NETWORK_PLATFORM_ID.get(network)
+        params = {
+            'base-address':base_token_address,
+            'start':1,
+            'limit':10,
+            'platform-id':platform_id
+        }
+        res_data = requests.get(GET_TOKEN_INFO, params=params).json()['data']
+        for data in res_data:
+            logger.info(data)
+            if data['pairContractAddress'].lower() == pair_address.lower():
+                return data['poolId']
+    except Exception as ex:
+        logger.info(f'PROCESSING COIN POOL ID :{str(ex)}')
+        return None
 
 def processing_coin_info(url, network):
     try:
+        logger.info('===================')
         socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network, url.split('/')[-1])
         logger.info(socket_url)
         websocket_client = WebSocketClient(socket_url)
@@ -14,11 +36,13 @@ def processing_coin_info(url, network):
         base_token_address = token_info_message['pair']['baseToken']['address']
         quote_token_name = token_info_message['pair']['quoteToken']['name']
         quote_token_address = token_info_message['pair']['quoteToken']['address']
+        pair_address = token_info_message['pair']['pairAddress']
         market_cap = token_info_message['pair']['marketCap']
-        return base_token_name, base_token_address, quote_token_name, quote_token_address, market_cap
+        pool_id = get_pool_id(base_token_address, network, pair_address)
+        return base_token_name, base_token_address, quote_token_name, quote_token_address, pair_address, market_cap, pool_id
     except Exception as ex:
         logger.info(f'PROCESSING COIN INFO ERROR :{str(ex)}')
-        return None, None, None, None, None
+        return None, None, None, None, None, None, None
     
 async def insert_token(token):
     new_token = await database["tokens"].insert_one(token)

@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 NETWORK_PLATFORM_ID = {
-    'ETH':1,
-    'BSC':14
+    'ethereum':1,
+    'bsc':14
 }
 
 class Network(str, Enum):
@@ -15,8 +15,16 @@ class TokenModel(BaseModel):
     base_token_address: str = Field(...)
     quote_token_name: str = Field(...)
     quote_token_address: str = Field(...)
+    pair_address: str = Field(...)
     network: str = Field(...)
     market_cap: int = Field(...)
+    pool_id: str=Field(...)
+    description: str = Field(...)
+    token_telegram: str = Field(...)
+    chart: str = Field(...)
+    trade: str = Field(...)
+    snipe: str = Field(...)
+    trending: str = Field(...)
 
     class Config:
 
@@ -26,8 +34,16 @@ class TokenModel(BaseModel):
                 "base_token_address": "0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
                 "quote_token_name": "CoCo",
                 "quote_token_address":"0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
+                "pair_address":"0xa3c31927a092bd54eb9a0b5dfe01d9db5028bd4f",
                 "network": "ethereum",
-                "market_cap": 563352341
+                "market_cap": 563352341,
+                "pool_id": "563352341",
+                "description":'description',
+                "token_telegram":"token_telegram",
+                "chart":"chart",
+                "snipe":"snipe",
+                "trade":"trade",
+                "trending":"trending"
             }
         }
         
@@ -38,8 +54,16 @@ def token_helper(token) -> dict:
         "base_token_address": token["base_token_address"],
         "quote_token_name": token["quote_token_name"],
         "quote_token_address": token["quote_token_address"],
+        "pair_address": token["pair_address"],
         "network": token['network'],
         "market_cap": token['market_cap'],
+        "pool_id": token['pool_id'],
+        "description": token['description'],
+        "token_telegram":token['token_telegram'],
+        "chart":token['chart'],
+        "snipe":token['snipe'],
+        "trade":token['trade'],
+        "trending":token['trending']
     }
         
 def ResponseModel(data, message):
