@@ -25,6 +25,8 @@ class TokenModel(BaseModel):
     trade: str = Field(...)
     snipe: str = Field(...)
     trending: str = Field(...)
+    ads_text: str = Field(...)
+    ads_url: str = Field(...)
 
     class Config:
 
@@ -43,7 +45,9 @@ class TokenModel(BaseModel):
                 "chart":"chart",
                 "snipe":"snipe",
                 "trade":"trade",
-                "trending":"trending"
+                "trending":"trending",
+                "ads_text": "AAAAAAAAAAA",
+                "ads_url": "https://t.me/kir_inu"
             }
         }
         
@@ -63,7 +67,9 @@ def token_helper(token) -> dict:
         "chart":token['chart'],
         "snipe":token['snipe'],
         "trade":token['trade'],
-        "trending":token['trending']
+        "trending":token['trending'],
+        "ads_text":token['ads_text'],
+        "ads_url":token['ads_url']
     }
         
 def ResponseModel(data, message):

@@ -10,7 +10,7 @@ from token_socket import WebSocketClient
 app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
-async def add_token(token_url:str, description: str, token_telegram: str, chart:str, snipe:str, trade:str, trending:str, network:Network = Network.ETH):
+async def add_token(token_url:str, description: str, token_telegram: str, chart:str, snipe:str, trade:str, trending:str, ads_text:str, ads_url:str, network:Network = Network.ETH):
     base_token_name, base_token_address, quote_token_name, quote_token_address,pair_address, market_cap, pool_id = processing_coin_info(token_url, network.value)
     if base_token_address is None or pool_id is None:
         logger.info(base_token_address)
@@ -31,7 +31,9 @@ async def add_token(token_url:str, description: str, token_telegram: str, chart:
             "chart":chart,
             "snipe":snipe,
             "trade":trade,
-            "trending":trending
+            "trending":trending,
+            "ads_text":ads_text,
+            "ads_url":ads_url
         }
         token = TokenModel(**token_dict)
         token = jsonable_encoder(token)
@@ -47,7 +49,7 @@ async def get_tokens():
     return ResponseModel(data=tokens,message="Get list tokens successfully")
 
 @app.put('/update_token', response_description="Update token by pair address")
-async def update_tokens(token_url:str, description: str = None , token_telegram: str = None, chart:str = None, snipe:str = None, trade:str = None, trending:str = None, network:Network = Network.ETH):
+async def update_tokens(token_url:str, description: str = None , token_telegram: str = None, chart:str = None, snipe:str = None, trade:str = None, trending:str = None, ads_text:str=None, ads_url:str=None, network:Network = Network.ETH):
     try:
         update_field = {}
         socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network.value, token_url.split('/')[-1])
@@ -67,6 +69,10 @@ async def update_tokens(token_url:str, description: str = None , token_telegram:
             update_field['trade'] = trade
         if trending is not None:
             update_field['trending'] = trending
+        if ads_text is not None:
+            update_field['ads_text'] = ads_text
+        if ads_url is not None:
+            update_field['ads_url'] = ads_url
         update_result = await database["tokens"].update_one({"pair_address": pair_address}, {"$set": update_field})
         if update_result.modified_count == 1:
             if await database["tokens"].find_one({"pair_address": pair_address}) is not None:
