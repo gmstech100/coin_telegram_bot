@@ -27,12 +27,18 @@ def get_pool_id(base_token_address, network, pair_address):
 def processing_coin_info(url, network):
     try:
         token_info_message = read_socket(network, url.split('/')[-1])
+        logger.info('-----------------------------')
+        logger.info(token_info_message)
         base_token_name = token_info_message['pair']['baseToken']['name']
         base_token_address = token_info_message['pair']['baseToken']['address']
         quote_token_name = token_info_message['pair']['quoteToken']['name']
         quote_token_address = token_info_message['pair']['quoteToken']['address']
         pair_address = token_info_message['pair']['pairAddress']
-        market_cap = token_info_message['pair']['marketCap']
+        try:
+            market_cap = token_info_message['pair']['marketCap']
+        except Exception as ex:
+            logger.info(f'MARKET CAP ERROR: {str(ex)}')
+            market_cap = 0
         pool_id = get_pool_id(base_token_address, network, pair_address)
         return base_token_name, base_token_address, quote_token_name, quote_token_address, pair_address, market_cap, pool_id
     except Exception as ex:

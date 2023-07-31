@@ -85,7 +85,10 @@ async def process_token_trade_history(token, count):
             from_address = EthereumTransaction(INFURA_ID).get_transaction_by_hash(first_trade['txn'])['from']
             display_from_address = '{}...{}'.format(from_address[:6], from_address[-4:])
             eth_value = round(usd_to_eth(float(first_trade['totalUsd'])),2)
-            current_market_cap = read_socket(token["network"], token["pair_address"])['pair']['marketCap']
+            try:
+                current_market_cap = read_socket(token["network"], token["pair_address"])['pair']['marketCap']
+            except Exception as ex:
+                current_market_cap = 0
             telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'],token['token_telegram'], token['description'],eth_value, round(float(first_trade['totalUsd']),2),display_from_address ,from_address, first_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
         else:
             print('no new transaction')
@@ -112,7 +115,10 @@ async def process_token_trade_history(token, count):
                     from_address = EthereumTransaction(INFURA_ID).get_transaction_by_hash(new_trade['txn'])['from']
                     display_from_address = '{}...{}'.format(from_address[:6], from_address[-4:])
                     eth_value = round(usd_to_eth(float(new_trade['totalUsd'])),2)
-                    current_market_cap = read_socket(token["network"], token["pair_address"])['pair']['marketCap']
+                    try:
+                        current_market_cap = read_socket(token["network"], token["pair_address"])['pair']['marketCap']
+                    except Exception as ex:
+                        current_market_cap = 0
                     telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'], token['token_telegram'], token['description'],eth_value, round(float(new_trade['totalUsd']),2),display_from_address ,from_address, new_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
         else:
             print('no new transaction')

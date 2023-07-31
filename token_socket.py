@@ -1,5 +1,6 @@
 import websocket
 import json
+from loguru import logger
 
 class WebSocketClient:
     def __init__(self, url):
@@ -38,6 +39,7 @@ class WebSocketClient:
         
 def read_socket(network,pair_address):
     socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network, pair_address)
+    logger.info(socket_url)
     websocket_client = WebSocketClient(socket_url)
     websocket_client.run_forever(origin="https://dexscreener.com")
     return websocket_client.get_message()
