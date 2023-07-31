@@ -20,6 +20,12 @@ class WebSocketClient:
 
     def get_message(self):
         return self.received_message
+    
+    def get_pair_address(self):
+        return self.received_message['pair']['pairAddress']
+    
+    def get_market_cap(self):
+        return self.received_message['pair']['marketCap']
 
     def run_forever(self, origin=None):
         self.ws = websocket.WebSocketApp(
@@ -28,3 +34,10 @@ class WebSocketClient:
             header=self.header
         )
         self.ws.run_forever(origin=origin)
+        
+        
+def read_socket(network,pair_address):
+    socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network, pair_address)
+    websocket_client = WebSocketClient(socket_url)
+    websocket_client.run_forever(origin="https://dexscreener.com")
+    return websocket_client.get_message()

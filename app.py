@@ -6,7 +6,7 @@ from database import database
 from models import TokenModel, ResponseModel, token_helper, Network
 from process import processing_coin_info
 from loguru import logger
-from token_socket import WebSocketClient
+from token_socket import read_socket
 app = FastAPI()
 
 @app.post("/add_token", response_description="Add new token")
@@ -52,11 +52,8 @@ async def get_tokens():
 async def update_tokens(token_url:str, description: str = None , token_telegram: str = None, chart:str = None, snipe:str = None, trade:str = None, trending:str = None, ads_text:str=None, ads_url:str=None, network:Network = Network.ETH):
     try:
         update_field = {}
-        socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network.value, token_url.split('/')[-1])
-        logger.info(socket_url)
-        websocket_client = WebSocketClient(socket_url)
-        websocket_client.run_forever(origin="https://dexscreener.com")
-        pair_address = websocket_client.get_message()['pair']['pairAddress']
+        socket_message = read_socket(network.value, token_url.split('/')[-1])
+        pair_address = socket_message['pair']['pairAddress']
         if description is not None:
             update_field['description'] = description
         if token_telegram is not None:
@@ -85,11 +82,8 @@ async def update_tokens(token_url:str, description: str = None , token_telegram:
 @app.delete('/delete_token', response_description="Delete token by pair address")
 async def delete_token(token_url:str, network:Network = Network.ETH):
     try:
-        socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network.value, token_url.split('/')[-1])
-        logger.info(socket_url)
-        websocket_client = WebSocketClient(socket_url)
-        websocket_client.run_forever(origin="https://dexscreener.com")
-        pair_address = websocket_client.get_message()['pair']['pairAddress']
+        socket_message = read_socket(network.value, token_url.split('/')[-1])
+        pair_address = socket_message['pair']['pairAddress']
         await database["tokens"].delete_one({"pair_address": pair_address})
         return ResponseModel(data=True,message="Delete token successfully")
     except Exception as ex:

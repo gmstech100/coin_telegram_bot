@@ -1,6 +1,6 @@
 from database import database
 from loguru import logger
-from token_socket import WebSocketClient
+from token_socket import read_socket
 from models import NETWORK_PLATFORM_ID
 from config import GET_TOKEN_INFO
 
@@ -26,12 +26,7 @@ def get_pool_id(base_token_address, network, pair_address):
 
 def processing_coin_info(url, network):
     try:
-        logger.info('===================')
-        socket_url = 'wss://io.dexscreener.com/dex/screener/pair/{}/{}'.format(network, url.split('/')[-1])
-        logger.info(socket_url)
-        websocket_client = WebSocketClient(socket_url)
-        websocket_client.run_forever(origin="https://dexscreener.com")
-        token_info_message = websocket_client.get_message()
+        token_info_message = read_socket(network, url.split('/')[-1])
         base_token_name = token_info_message['pair']['baseToken']['name']
         base_token_address = token_info_message['pair']['baseToken']['address']
         quote_token_name = token_info_message['pair']['quoteToken']['name']

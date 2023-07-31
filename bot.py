@@ -7,6 +7,7 @@ from config import GET_TRADE_HISTORY,CHAT_ID, BOT_TOKEN, INFURA_ID, CONVERT_USD_
 from transaction import EthereumTransaction
 from database import database
 from telegram_handler import TelegramBot
+from token_socket import read_socket
 
 telegram_bot = TelegramBot(BOT_TOKEN, CHAT_ID)
 telegram_bot.run()
@@ -16,11 +17,11 @@ telegram_message_format = """
 [{}]({}) BUY! \n 
 {} \n 
 💵 {} ETH (${}) \n 
-[{}](https://etherscan.io/address/{}) | [Txn](https://etherscan.io/tx/{}) \n 
+🔹 [{}](https://etherscan.io/address/{}) | [Txn](https://etherscan.io/tx/{}) \n 
 ✅ *New Holder* \n 
 🔼 Market Cap $*{}* \n 
-🦎[Chart]({})   ✨[Trade]({}) \n 
-🦄[Snipe]({})   🔹[Trending]({}) 
+🦎 [Chart]({})   ✨[Trade]({}) \n 
+🦄 [Snipe]({})   🔹[Trending]({}) 
 """
 def format_count(count):
     if count == 1:
@@ -41,26 +42,6 @@ def format_count(count):
         return "8️⃣"
     else:
         return '9️⃣'
-
-# def send_telegram_message(message: str):
-#     data_dict = {'chat_id': CHAT_ID,
-#                  'text': message,
-#                  'parse_mode': 'HTML',
-#                  'disable_notification': True}
-#     headers = {'Content-Type': 'application/json',
-#                'Proxy-Authorization': 'Basic base64'}
-#     data = json.dumps(data_dict)
-#     params = {
-#         'parse_mode': 'Markdown',
-#         'disable_web_page_preview':True
-#     }
-#     url = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?'
-#     response = requests.post(url,
-#                              data=data,
-#                              headers=headers,
-#                              params=params,
-#                              verify=False)
-#     return response
 
 def get_eth_price_in_usd():
     params = {'ids': 'ethereum', 'vs_currencies': 'usd'}
@@ -104,7 +85,8 @@ async def process_token_trade_history(token, count):
             from_address = EthereumTransaction(INFURA_ID).get_transaction_by_hash(first_trade['txn'])['from']
             display_from_address = '{}...{}'.format(from_address[:6], from_address[-4:])
             eth_value = round(usd_to_eth(float(first_trade['totalUsd'])),2)
-            telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'],token['token_telegram'], token['description'],eth_value, round(float(first_trade['totalUsd']),2),display_from_address ,from_address, first_trade['txn'], '{:,}'.format(token['market_cap']), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
+            current_market_cap = read_socket(token["network"], token["pair_address"])['pair']['marketCap']
+            telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'],token['token_telegram'], token['description'],eth_value, round(float(first_trade['totalUsd']),2),display_from_address ,from_address, first_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
         else:
             print('no new transaction')
     else:
@@ -130,7 +112,8 @@ async def process_token_trade_history(token, count):
                     from_address = EthereumTransaction(INFURA_ID).get_transaction_by_hash(new_trade['txn'])['from']
                     display_from_address = '{}...{}'.format(from_address[:6], from_address[-4:])
                     eth_value = round(usd_to_eth(float(new_trade['totalUsd'])),2)
-                    telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'], token['token_telegram'], token['description'],eth_value, round(float(new_trade['totalUsd']),2),display_from_address ,from_address, new_trade['txn'], '{:,}'.format(token['market_cap']), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
+                    current_market_cap = read_socket(token["network"], token["pair_address"])['pair']['marketCap']
+                    telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'], token['token_telegram'], token['description'],eth_value, round(float(new_trade['totalUsd']),2),display_from_address ,from_address, new_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
         else:
             print('no new transaction')
 

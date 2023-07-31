@@ -1,14 +1,11 @@
 import requests
 import asyncio
-from token_socket import WebSocketClient
+from token_socket import read_socket
 from database import database
 from loguru import logger
 
 async def update_token_market_cap(token):
-    socket_url = f'wss://io.dexscreener.com/dex/screener/pair/{token["network"]}/{token["pair_address"]}'
-    websocket_client = WebSocketClient(socket_url)
-    websocket_client.run_forever(origin="https://dexscreener.com")
-    token_info_message = websocket_client.get_message()
+    token_info_message = read_socket(token["network"], token["pair_address"])
     market_cap = token_info_message['pair']['marketCap']
     update_market_cap = {
         'market_cap': market_cap
