@@ -15,7 +15,7 @@ telegram_bot.run()
 transaction_count = 0
 
 telegram_message_format = """
-{} | [{}]({}) \n 
+*{}* | [{}]({}) \n 
 [{}]({}) BUY! \n 
 {} \n 
 💵 {} ETH (${}) \n 
