@@ -3,7 +3,7 @@ import json
 import asyncio
 import aiohttp
 
-from config import GET_TRADE_HISTORY,CHAT_ID, BOT_TOKEN, INFURA_ID, CONVERT_USD_ETH
+from config import GET_TRADE_HISTORY,CHAT_ID, BOT_TOKEN, INFURA_ID, CONVERT_USD_ETH, LIST_TOKENS_LABELS
 from transaction import EthereumTransaction
 from database import database
 from telegram_handler import TelegramBot
@@ -11,6 +11,8 @@ from token_socket import read_socket
 
 telegram_bot = TelegramBot(BOT_TOKEN, CHAT_ID)
 telegram_bot.run()
+
+transaction_count = 0
 
 telegram_message_format = """
 {} | [{}]({}) \n 
@@ -65,8 +67,17 @@ def usd_to_eth(usd_value):
         return eth_value
     else:
         return None
+    
+async def send_token_list_to_telegram(tokens):
+    # Construct the message text
+    telegram_message = """{}\n""".format(LIST_TOKENS_LABELS)
+    for count, token in enumerate(tokens):
+        telegram_message += '{} [{}]({})\n'.format(str(count+1), token['base_token_name'], token['token_telegram'])
+    # Send the message
+    telegram_bot.send_message(message_text=telegram_message, button_text='ETH TRENDING LIVE', button_url='https://t.me/cointransactionchannel')
 
 async def process_token_trade_history(token, count):
+    global transaction_count
     trade_api = GET_TRADE_HISTORY.format(token['pool_id'])
     print('pool_id', token['pool_id'])
     headers = {
@@ -90,6 +101,7 @@ async def process_token_trade_history(token, count):
             except Exception as ex:
                 current_market_cap = 0
             telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'],token['token_telegram'], token['description'],eth_value, round(float(first_trade['totalUsd']),2),display_from_address ,from_address, first_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
+            transaction_count += 1
         else:
             print('no new transaction')
     else:
@@ -120,9 +132,20 @@ async def process_token_trade_history(token, count):
                     except Exception as ex:
                         current_market_cap = 0
                     telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'], token['token_telegram'], token['description'],eth_value, round(float(new_trade['totalUsd']),2),display_from_address ,from_address, new_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
+                    transaction_count += 1
         else:
             print('no new transaction')
-
+            
+    # Increment the transaction count
+    
+    if transaction_count % 100 == 0:
+        # Fetch the list of tokens from the local server
+        list_tokens = requests.get('http://localhost:8888/get_tokens').json()['data']
+        sorted_list_tokens = sorted(list_tokens, key=lambda d: d['market_cap'], reverse=True)
+        
+        # Send the list of tokens to Telegram
+        await send_token_list_to_telegram(sorted_list_tokens)
+        transaction_count = 0
 async def main():
     while True:
         try:
@@ -135,7 +158,7 @@ async def main():
             await asyncio.gather(*tasks)
         except Exception as e:
             print(f"Error fetching token data: {e}")
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
         
 if __name__ == "__main__":
     asyncio.run(main())
