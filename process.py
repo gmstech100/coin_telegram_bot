@@ -27,8 +27,6 @@ def get_pool_id(base_token_address, network, pair_address):
 def processing_coin_info(url, network):
     try:
         token_info_message = read_socket(network, url.split('/')[-1])
-        logger.info('-----------------------------')
-        logger.info(token_info_message)
         base_token_name = token_info_message['pair']['baseToken']['name']
         base_token_address = token_info_message['pair']['baseToken']['address']
         quote_token_name = token_info_message['pair']['quoteToken']['name']
