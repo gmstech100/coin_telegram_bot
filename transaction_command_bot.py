@@ -1,7 +1,8 @@
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters, CallbackContext
 from telegram.ext import JobQueue
-import time
+from process import processing_coin_info
+from config import GET_TRADE_HISTORY
 # Conversation states
 SELECT_NETWORK, TOKEN_ADDRESS, DESCRIPTION = range(3)
 
@@ -56,6 +57,14 @@ def received_description(update, context):
 
     return ConversationHandler.END
 
+def process_get_transaction_by_token(network, token_address, description):
+    if network == 'ethererum':
+        token_url = f'https://dexscreener.com/ethereum/{token_address}'
+    base_token_name, base_token_address, quote_token_name, quote_token_address,pair_address, market_cap, pool_id = processing_coin_info(token_url, network.value)
+    trade_api = GET_TRADE_HISTORY.format(pool_id)
+    
+    
+    
 def send_token_info(context): 
     chat_id, network, token_address, description = context.job.context
     

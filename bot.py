@@ -75,15 +75,8 @@ async def send_token_list_to_telegram(tokens):
         telegram_message += '{} [{}]({})\n'.format(str(count+1), token['base_token_name'], token['token_telegram'])
     # Send the message
     telegram_bot.send_message(message_text=telegram_message, button_text='ETH TRENDING LIVE', button_url='https://t.me/cointransactionchannel')
-
-async def process_token_trade_history(token, count):
-    global transaction_count
-    trade_api = GET_TRADE_HISTORY.format(token['pool_id'])
-    print('pool_id', token['pool_id'])
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188'
-    }
-    # select last transaction from db
+    
+async def last_transaction_telegram(trade_api, headers, token,count):
     last_transaction = await database['transactions'].find_one({"pool_id": token['pool_id']})
     async with aiohttp.ClientSession() as session:
         async with session.get(trade_api, headers=headers) as response:
@@ -135,7 +128,15 @@ async def process_token_trade_history(token, count):
                     transaction_count += 1
         else:
             print('no new transaction')
-            
+
+async def process_token_trade_history(token, count):
+    global transaction_count
+    trade_api = GET_TRADE_HISTORY.format(token['pool_id'])
+    print('pool_id', token['pool_id'])
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188'
+    }
+    await last_transaction_telegram(trade_api=trade_api, headers=headers, token=token, count=count)
     # Increment the transaction count
     
     if transaction_count % 100 == 0:
