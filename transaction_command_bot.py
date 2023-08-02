@@ -2,16 +2,7 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, ConversationHandler, Filters, CallbackContext
 from telegram.ext import JobQueue
 from process import processing_coin_info
-from config import GET_TRADE_HISTORY, INFURA_ID, CONVERT_USD_ETH
-from transaction import EthereumTransaction
-from token_socket import read_socket
-from loguru import logger
-import aiohttp
-import json
-import asyncio
-from database import database
-from bot import usd_to_eth
-
+from config import GET_TRADE_HISTORY
 # Conversation states
 SELECT_NETWORK, TOKEN_ADDRESS, DESCRIPTION = range(3)
 
@@ -59,122 +50,37 @@ def received_description(update, context):
     description = context.user_data['description']
 
 
-    context.job_queue.run_repeating(send_token_info, interval=10, first=0, context=(chat_id, network, token_address, description))
+    context.job_queue.run_repeating(send_token_info, interval=60, first=0, context=(chat_id, network, token_address, description))
 
     update.message.reply_text("You will now receive token info every 60 seconds. "
                               "Send /cancel to stop receiving updates.")
 
     return ConversationHandler.END
 
-async def process_get_transaction_by_token(network, token_address, description):
-    network = dict_network.get(network)
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188'
-    }
-    token_url = ''
-    if network == 'ethereum':
+def process_get_transaction_by_token(network, token_address, description):
+    if network == 'ethererum':
         token_url = f'https://dexscreener.com/ethereum/{token_address}'
-    base_token_name, base_token_address, quote_token_name, quote_token_address,pair_address, market_cap, pool_id = processing_coin_info(token_url, network)
+    base_token_name, base_token_address, quote_token_name, quote_token_address,pair_address, market_cap, pool_id = processing_coin_info(token_url, network.value)
     trade_api = GET_TRADE_HISTORY.format(pool_id)
-    token_dict = {
-        "base_token_name": base_token_name,
-        "base_token_address": base_token_address,
-        "quote_token_name":quote_token_name,
-        "quote_token_address":quote_token_address,
-        "pair_address":pair_address,
-        "network": network,
-        "market_cap":market_cap,
-        "pool_id":pool_id,
-        "description":description,
-        "token_telegram":token_url,
-        "chart":token_url,
-        "snipe":token_url,
-        "trade":token_url,
-        "trending":'https://t.me/cointransactionchannel',
-        "ads_text":'ETH TRENDING (LIVE)',
-        "ads_url":'https://t.me/cointransactionchannel'
-    }
-    last_transaction = await database['transactions'].find_one({"pool_id": token_dict['pool_id']})
-    logger.info('last trans %s' % last_transaction)
-    async with aiohttp.ClientSession() as session:
-        async with session.get(trade_api, headers=headers) as response:
-            data = await response.json()
-            list_trades = data['data']['transactions']
-    if last_transaction is None:
-        first_trade = list_trades[0]
-        if first_trade['type'] == 'buy':
-            await database["transactions"].insert_one({'pool_id':token_dict['pool_id'], 'last_transaction':json.dumps(first_trade)})
-            from_address = EthereumTransaction(INFURA_ID).get_transaction_by_hash(first_trade['txn'])['from']
-            display_from_address = '{}...{}'.format(from_address[:6], from_address[-4:])
-            eth_value = round(usd_to_eth(float(first_trade['totalUsd'])),2)
-            try:
-                current_market_cap = read_socket(token_dict["network"], token_dict["pair_address"])['pair']['marketCap']
-            except Exception as ex:
-                current_market_cap = 0
-            # telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'],token['token_telegram'], token['description'],eth_value, round(float(first_trade['totalUsd']),2),display_from_address ,from_address, first_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
-            return {
-                'token':token_dict,
-                'eth_value':eth_value,
-                'display_from_address':display_from_address,
-                'total_usd':round(float(first_trade['totalUsd']),2),
-                'from_address':from_address,
-                'txn':first_trade['txn'],
-                'current_market_cap':'{:,}'.format(current_market_cap)
-            }        
-        else:
-            logger.info('no new transaction')
-            return 
-    else:
-        json_last_transaction = json.loads(last_transaction['last_transaction'])
-        index_last_transaction = 0
-        for trade in list_trades:
-            if trade['time'] == json_last_transaction['time']:
-                index_last_transaction = list_trades.index(trade)
-        if index_last_transaction != 0:
-            print('index', index_last_transaction)
-            if index_last_transaction == 1:
-                new_list_trades = list_trades[:index_last_transaction]
-            else:
-                new_list_trades = list_trades[:index_last_transaction-1]
-            for new_trade in new_list_trades:
-                if new_trade['type'] == 'buy':
-                    last_transaction_update = await database["transactions"].update_one(
-                        {"pool_id": token_dict['pool_id']},
-                        {"$set": {'last_transaction':json.dumps(new_trade)}}
-                    )
-                    if last_transaction_update.modified_count == 1:
-                        print('last transaction updated to db')
-                    from_address = EthereumTransaction(INFURA_ID).get_transaction_by_hash(new_trade['txn'])['from']
-                    display_from_address = '{}...{}'.format(from_address[:6], from_address[-4:])
-                    eth_value = round(usd_to_eth(float(new_trade['totalUsd'])),2)
-                    try:
-                        current_market_cap = read_socket(token_dict["network"], token_dict["pair_address"])['pair']['marketCap']
-                    except Exception as ex:
-                        current_market_cap = 0
-                    return {
-                        'token':token_dict,
-                        'eth_value':eth_value,
-                        'display_from_address':display_from_address,
-                        'total_usd':round(float(new_trade['totalUsd']),2),
-                        'from_address':from_address,
-                        'txn':new_trade['txn'],
-                        'current_market_cap':'{:,}'.format(current_market_cap)
-                    }       
-                    # telegram_bot.send_message(message_text=telegram_message_format.format(format_count(count), token['base_token_name'], token['token_telegram'], token['base_token_name'], token['token_telegram'], token['description'],eth_value, round(float(new_trade['totalUsd']),2),display_from_address ,from_address, new_trade['txn'], '{:,}'.format(current_market_cap), token['chart'], token['trade'], token['snipe'], token['trending']), button_text=token['ads_text'], button_url=token['ads_url'])
-        else:
-            logger.info('no new transaction')
-            return 
+    
     
     
 def send_token_info(context): 
     chat_id, network, token_address, description = context.job.context
     
-    # Get the result of the async function using the 'result()' method
-    result = asyncio.run(process_get_transaction_by_token(network, token_address,description))
-    print("Result from async function:", result)
-    
+    token_info_1 = "First piece of token info."
+    token_info_2 = "Second piece of token info."
 
-    context.bot.send_message(chat_id=chat_id, text=result.get('token'))
+    # Compose the response message
+    response_message = (
+        f"Network: {network}\n"
+        f"Token Address: {token_address}\n"
+        f"Description: {description}\n"
+        f"Info 1: {token_info_1}\n"
+        f"Info 2: {token_info_2}"
+    )
+
+    context.bot.send_message(chat_id=chat_id, text=response_message)
     
 def cancel(update, context):
     update.message.reply_text("You have unsubscribed from token info updates.", reply_markup=ReplyKeyboardRemove())
