@@ -29,9 +29,11 @@ def processing_coin_info(url, network):
         token_info_message = read_socket(network, url.split('/')[-1])
         base_token_name = token_info_message['pair']['baseToken']['name']
         base_token_address = token_info_message['pair']['baseToken']['address']
+        logger.info('BASE TOKEN ADDRESS: %s' % base_token_address)
         quote_token_name = token_info_message['pair']['quoteToken']['name']
         quote_token_address = token_info_message['pair']['quoteToken']['address']
         pair_address = token_info_message['pair']['pairAddress']
+        logger.info('PAIR ADDRESS: %s' % pair_address)
         try:
             market_cap = token_info_message['pair']['marketCap']
         except Exception as ex:

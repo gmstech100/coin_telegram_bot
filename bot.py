@@ -8,6 +8,7 @@ from transaction import EthereumTransaction
 from database import database
 from telegram_handler import TelegramBot
 from token_socket import read_socket
+from utils import usd_to_eth
 
 telegram_bot = TelegramBot(BOT_TOKEN, CHAT_ID)
 telegram_bot.run()
@@ -45,28 +46,7 @@ def format_count(count):
     else:
         return '9️⃣'
 
-def get_eth_price_in_usd():
-    params = {'ids': 'ethereum', 'vs_currencies': 'usd'}
-    try:
-        response = requests.get(CONVERT_USD_ETH, params=params)
-        data = response.json()
 
-        if 'ethereum' in data and 'usd' in data['ethereum']:
-            return data['ethereum']['usd']
-        else:
-            return None
-    except requests.exceptions.RequestException as e:
-        print('Error:', e)
-        return None
-    
-def usd_to_eth(usd_value):
-    eth_price = get_eth_price_in_usd()
-
-    if eth_price is not None:
-        eth_value = usd_value / eth_price
-        return eth_value
-    else:
-        return None
     
 async def send_token_list_to_telegram(tokens):
     # Construct the message text
@@ -147,6 +127,8 @@ async def process_token_trade_history(token, count):
         # Send the list of tokens to Telegram
         await send_token_list_to_telegram(sorted_list_tokens)
         transaction_count = 0
+        
+        
 async def main():
     while True:
         try:
