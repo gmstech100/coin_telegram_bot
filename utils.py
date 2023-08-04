@@ -1,6 +1,7 @@
 import requests
 from config import CONVERT_USD_ETH
 
+
 def get_eth_price_in_usd():
     params = {'ids': 'ethereum', 'vs_currencies': 'usd'}
     try:
@@ -14,7 +15,8 @@ def get_eth_price_in_usd():
     except requests.exceptions.RequestException as e:
         print('Error:', e)
         return None
-    
+
+
 def usd_to_eth(usd_value):
     eth_price = get_eth_price_in_usd()
 

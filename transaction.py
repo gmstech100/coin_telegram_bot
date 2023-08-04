@@ -1,6 +1,7 @@
 from web3 import Web3
 from config import INFURA_ID
 
+
 class EthereumTransaction:
     def __init__(self, infura_project_id):
         # Set up the Infura URL using the provided Project ID

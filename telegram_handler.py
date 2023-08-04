@@ -3,6 +3,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 import threading
 
+
 class TelegramBot:
     def __init__(self, bot_token, chat_id):
         self.bot_token = bot_token
@@ -23,7 +24,8 @@ class TelegramBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         # Send the message with the button
-        self.bot.send_message(chat_id=self.chat_id, text=message_text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        self.bot.send_message(chat_id=self.chat_id, text=message_text, reply_markup=reply_markup,
+                              parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
     def button_click(self, update, context):
         query = update.callback_query
@@ -36,7 +38,8 @@ class TelegramBot:
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         # Send the message with the button
-        self.bot.send_message(chat_id=self.chat_id, text=message_text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        self.bot.send_message(chat_id=self.chat_id, text=message_text, reply_markup=reply_markup,
+                              parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
     def run(self):
         # Start the bot in a separate thread

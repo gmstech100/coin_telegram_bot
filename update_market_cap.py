@@ -4,6 +4,7 @@ from token_socket import read_socket
 from database import database
 from loguru import logger
 
+
 async def update_token_market_cap(token):
     token_info_message = read_socket(token["network"], token["pair_address"])
     market_cap = token_info_message['pair']['marketCap']
@@ -17,6 +18,7 @@ async def update_token_market_cap(token):
     if update_result.modified_count == 1:
         logger.info('Token %s updated market cap %s' % (token['pair_address'], market_cap))
 
+
 async def main():
     while True:
         try:
@@ -26,6 +28,7 @@ async def main():
         except Exception as e:
             logger.error(f"Error updating token market cap: {e}")
         await asyncio.sleep(10)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
