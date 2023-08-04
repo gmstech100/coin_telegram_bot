@@ -78,7 +78,7 @@ async def send_token_list_to_telegram(tokens):
     # Construct the message text
     telegram_message = """{}\n""".format(LIST_TOKENS_LABELS)
     for count, token in enumerate(tokens):
-        telegram_message += '{} [{}]({})\n'.format(str(count + 1), token['base_token_name'], token['token_telegram'])
+        telegram_message += '*{}* [{}]({})\n'.format(str(count + 1), token['base_token_name'], token['token_telegram'])
     # Send the message
     telegram_bot.send_message(message_text=telegram_message, button_text='ETH TRENDING LIVE',
                               button_url='https://t.me/cointransactionchannel')
