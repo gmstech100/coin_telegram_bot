@@ -71,7 +71,7 @@ def received_description(update, context):
     context.job_queue.run_repeating(send_token_info, interval=5, first=0,
                                     context=(chat_id, network, token_address, description))
 
-    update.message.reply_text("You will now receive token info every 60 seconds. "
+    update.message.reply_text("You will now receive token info every 5 seconds. "
                               "Send /cancel to stop receiving updates.")
 
     return ConversationHandler.END
@@ -105,30 +105,31 @@ def send_token_info(context):
     }
 
     response = requests.post('http://localhost:8888/get_last_transaction', data=json.dumps(token_dict)).json()
-    if response is not None:
-        logger.info('============================ %s' % response['data'])
-        for return_dict in response['data']:
-            button = InlineKeyboardButton(return_dict['token']['ads_text'], url=return_dict['token']['ads_url'])
+    logger.info('RESPONSE: %s' % response)
+    if response['data'] is not None:
+        logger.info('============================ RESPONSE DATA %s' % response['data'])
+        return_dict = response['data']
+        button = InlineKeyboardButton(return_dict['token']['ads_text'], url=return_dict['token']['ads_url'])
 
-            # Create the inline keyboard markup and attach the button to it
-            reply_markup = InlineKeyboardMarkup([[button]])
-            context.bot.send_message(chat_id=chat_id,
-                                     text=telegram_message_format.format(return_dict['token']['base_token_name'],
-                                                                         return_dict['token']['token_telegram'],
-                                                                         return_dict['token']['base_token_name'],
-                                                                         return_dict['token']['token_telegram'],
-                                                                         return_dict['token']['description'],
-                                                                         return_dict['eth_value'],
-                                                                         return_dict['total_usd'],
-                                                                         return_dict['display_from_address'],
-                                                                         return_dict['from_address'],
-                                                                         return_dict['txn'],
-                                                                         return_dict['current_market_cap'],
-                                                                         return_dict['token']['chart'],
-                                                                         return_dict['token']['trade'],
-                                                                         return_dict['token']['snipe'],
-                                                                         return_dict['token']['trending']),
-                                     reply_markup=reply_markup, disable_web_page_preview=True, parse_mode='Markdown')
+        # Create the inline keyboard markup and attach the button to it
+        reply_markup = InlineKeyboardMarkup([[button]])
+        context.bot.send_message(chat_id=chat_id,
+                                 text=telegram_message_format.format(return_dict['token']['base_token_name'],
+                                                                     return_dict['token']['token_telegram'],
+                                                                     return_dict['token']['base_token_name'],
+                                                                     return_dict['token']['token_telegram'],
+                                                                     return_dict['token']['description'],
+                                                                     return_dict['eth_value'],
+                                                                     return_dict['total_usd'],
+                                                                     return_dict['display_from_address'],
+                                                                     return_dict['from_address'],
+                                                                     return_dict['txn'],
+                                                                     return_dict['current_market_cap'],
+                                                                     return_dict['token']['chart'],
+                                                                     return_dict['token']['trade'],
+                                                                     return_dict['token']['snipe'],
+                                                                     return_dict['token']['trending']),
+                                 reply_markup=reply_markup, disable_web_page_preview=True, parse_mode='Markdown')
 
 
 def cancel(update, context):

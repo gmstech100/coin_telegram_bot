@@ -139,6 +139,7 @@ async def get_last_transaction(token: dict):
                     }]}
         else:
             json_last_transaction = json.loads(last_transaction['last_transaction'])
+            logger.info('LAST TRANSACTION %s' % json_last_transaction)
             count = 0
             for trade in list_trades:
                 count += 1
@@ -149,6 +150,7 @@ async def get_last_transaction(token: dict):
                     )
                     if last_transaction_update.modified_count == 1:
                         logger.info('last transaction updated to db')
+                    logger.info('NEW BUY TRANSACTION %s' % trade)
                     from_address = EthereumTransaction(INFURA_ID).get_transaction_by_hash(trade['txn'])['from']
                     display_from_address = '{}...{}'.format(from_address[:6], from_address[-4:])
                     eth_value = round(usd_to_eth(float(trade['totalUsd'])), 2)
